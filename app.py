@@ -1,5 +1,7 @@
-from flask import Flask, send_file
+from flask import Flask, request, jsonify, send_file
 from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -7,14 +9,31 @@ import io
 
 app = Flask(__name__)
 
-# 캘리포니아 주택가격 데이터 로드
+# 캘리포니아 주택가격 데이터 로드 및 모델 훈련
+def load_data_and_train_model():
+    california_housing = fetch_california_housing()
+    data = pd.DataFrame(california_housing.data, columns=california_housing.feature_names)
+    data['MedHouseVal'] = california_housing.target
+
+    X = data.drop('MedHouseVal', axis=1)
+    y = data['MedHouseVal']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+
+    return model, X_test, y_test
+
+model, X_test, y_test = load_data_and_train_model()
+
+# 시각화 함수들
 def load_data():
     california_housing = fetch_california_housing()
     data = pd.DataFrame(california_housing.data, columns=california_housing.feature_names)
     data['MedHouseVal'] = california_housing.target
     return data
 
-# 산포도 시각화 함수
 def plot_scatter(data):
     plt.figure(figsize=(10, 6))
     sns.scatterplot(x='MedInc', y='MedHouseVal', data=data)
@@ -25,7 +44,6 @@ def plot_scatter(data):
     plt.close()
     return img
 
-# 피어슨 상관계수 히트맵 시각화 함수
 def plot_heatmap(data):
     plt.figure(figsize=(10, 6))
     corr = data.corr()
@@ -37,7 +55,6 @@ def plot_heatmap(data):
     plt.close()
     return img
 
-# 히스토그램 시각화 함수
 def plot_histogram(data):
     plt.figure(figsize=(10, 6))
     data['MedHouseVal'].plot(kind='hist', bins=30, color='skyblue')
@@ -48,22 +65,21 @@ def plot_histogram(data):
     plt.close()
     return img
 
-# 박스플롯 시각화 함수
 def plot_boxplot(data):
     plt.figure(figsize=(10, 6))
-    sns.boxplot(x='ocean_proximity', y='MedHouseVal', data=data)
-    plt.title('Boxplot of Median House Value by Ocean Proximity')
+    sns.boxplot(x='MedInc', y='MedHouseVal', data=data)
+    plt.title('Boxplot of Median House Value by Median Income')
     img = io.BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
     plt.close()
     return img
 
-# 파이차트 시각화 함수
 def plot_piechart(data):
     plt.figure(figsize=(10, 6))
-    data['ocean_proximity'].value_counts().plot(kind='pie', autopct='%1.1f%%')
-    plt.title('Pie chart of Ocean Proximity')
+    data['MedHouseValCat'] = pd.qcut(data['MedHouseVal'], 5, labels=False)
+    data['MedHouseValCat'].value_counts().plot(kind='pie', autopct='%1.1f%%')
+    plt.title('Pie chart of House Value Categories')
     img = io.BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
@@ -99,6 +115,18 @@ def visual_piechart():
     data = load_data()
     img = plot_piechart(data)
     return send_file(img, mimetype='image/png')
+
+# 예측을 수행하고 결과를 반환하는 함수
+@app.route('/predict', methods=['POST'])
+def predict():
+    input_data = request.json  # JSON 형식으로 입력 데이터를 받음
+    input_df = pd.DataFrame(input_data, index=[0])
+
+    # 예측 수행
+    prediction = model.predict(input_df)
+
+    # 결과를 JSON 형식으로 반환
+    return jsonify({'prediction': prediction[0]})
 
 if __name__ == '__main__':
     app.run(debug=True)
