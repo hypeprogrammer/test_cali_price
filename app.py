@@ -6,6 +6,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import io
+from sklearn.preprocessing import StandardScaler
+import numpy as np
 
 app = Flask(__name__)
 
@@ -18,15 +20,22 @@ def load_data_and_train_model():
     X = data.drop('MedHouseVal', axis=1)
     y = data['MedHouseVal']
 
+    # 로그 변환을 적용
+    y = np.log1p(y)
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # 스케일링 적용
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
     model = LinearRegression()
     model.fit(X_train, y_train)
 
-    return model, X_test, y_test
+    return model, X_test, y_test, scaler
 
-model, X_test, y_test = load_data_and_train_model()
-
+model, X_test, y_test, scaler = load_data_and_train_model()
 # 시각화 함수들
 def load_data():
     california_housing = fetch_california_housing()
@@ -123,13 +132,19 @@ def index():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    input_data = request.form  # HTML 폼으로부터 입력 데이터를 받음
+    input_data = request.form
     input_df = pd.DataFrame([input_data.to_dict(flat=True)])
+    input_df = input_df.astype(float)
+
+    # 스케일링 적용
+    input_df = scaler.transform(input_df)
 
     # 예측 수행
     prediction = model.predict(input_df)
 
-    # 결과를 HTML 페이지로 반환
+    # 로그 변환 역변환
+    prediction = np.expm1(prediction)
+
     return render_template('index.html', prediction=prediction[0])
 
 if __name__ == '__main__':
