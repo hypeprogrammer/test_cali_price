@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template
 from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -117,16 +117,20 @@ def visual_piechart():
     return send_file(img, mimetype='image/png')
 
 # 예측을 수행하고 결과를 반환하는 함수
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/predict', methods=['POST'])
 def predict():
-    input_data = request.json  # JSON 형식으로 입력 데이터를 받음
-    input_df = pd.DataFrame(input_data, index=[0])
+    input_data = request.form  # HTML 폼으로부터 입력 데이터를 받음
+    input_df = pd.DataFrame([input_data.to_dict(flat=True)])
 
     # 예측 수행
     prediction = model.predict(input_df)
 
-    # 결과를 JSON 형식으로 반환
-    return jsonify({'prediction': prediction[0]})
+    # 결과를 HTML 페이지로 반환
+    return render_template('index.html', prediction=prediction[0])
 
 if __name__ == '__main__':
     app.run(debug=True)

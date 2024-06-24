@@ -1,0 +1,44 @@
+html
+코드 복사
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>California Housing Price Prediction</title>
+</head>
+<body>
+    <h1>California Housing Price Prediction</h1>
+    <form action="/predict" method="post">
+        <label for="MedInc">Median Income:</label>
+        <input type="text" id="MedInc" name="MedInc"><br><br>
+        
+        <label for="HouseAge">House Age:</label>
+        <input type="text" id="HouseAge" name="HouseAge"><br><br>
+        
+        <label for="AveRooms">Average Rooms:</label>
+        <input type="text" id="AveRooms" name="AveRooms"><br><br>
+        
+        <label for="AveBedrms">Average Bedrooms:</label>
+        <input type="text" id="AveBedrms" name="AveBedrms"><br><br>
+        
+        <label for="Population">Population:</label>
+        <input type="text" id="Population" name="Population"><br><br>
+        
+        <label for="AveOccup">Average Occupancy:</label>
+        <input type="text" id="AveOccup" name="AveOccup"><br><br>
+        
+        <label for="Latitude">Latitude:</label>
+        <input type="text" id="Latitude" name="Latitude"><br><br>
+        
+        <label for="Longitude">Longitude:</label>
+        <input type="text" id="Longitude" name="Longitude"><br><br>
+        
+        <input type="submit" value="Predict">
+    </form>
+    
+    {% if prediction %}
+        <h2>Prediction: {{ prediction }}</h2>
+    {% endif %}
+</body>
+</html>
