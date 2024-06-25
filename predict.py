@@ -41,7 +41,8 @@ mse = mean_squared_error(y_test, y_pred)
 r2 = r2_score(y_test, y_pred)
 accuracy = {
     'mse': mse,
-    'r2': r2
+    'r2': r2,
+    'r2_percentage': r2 * 100
 }
 
 @predict_blueprint.route('/', methods=['GET', 'POST'])
