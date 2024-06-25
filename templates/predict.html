@@ -37,6 +37,9 @@
     {% if prediction %}
     <h2>Predicted Median House Value: {{ prediction }}</h2>
     {% endif %}
+    <h2>Model Accuracy</h2>
+    <p>Mean Squared Error: {{ accuracy.mse }}</p>
+    <p>R^2 Score: {{ accuracy.r2 }}</p>
     <a href="/">Back to Home</a>
 </body>
 </html>
