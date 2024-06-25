@@ -3,6 +3,7 @@ from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
 
@@ -30,12 +31,22 @@ def load_data_and_train_model():
     model = LinearRegression()
     model.fit(X_train, y_train)
 
-    return model, X_test, y_test, scaler
+    return model, X_train, X_test, y_train, y_test, scaler
 
-model, X_test, y_test, scaler = load_data_and_train_model()
+model, X_train, X_test, y_train, y_test, scaler = load_data_and_train_model()
+
+# 모델의 정확도 계산
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+accuracy = {
+    'mse': mse,
+    'r2': r2
+}
 
 @predict_blueprint.route('/', methods=['GET', 'POST'])
 def predict():
+    prediction = None
     if request.method == 'POST':
         input_data = request.form
         input_df = pd.DataFrame([input_data.to_dict(flat=True)])
@@ -48,7 +59,6 @@ def predict():
         prediction = model.predict(input_df)
 
         # 로그 변환 역변환
-        prediction = np.expm1(prediction)
+        prediction = np.expm1(prediction)[0]
 
-        return render_template('predict.html', prediction=prediction[0])
-    return render_template('predict.html')
+    return render_template('predict.html', prediction=prediction, accuracy=accuracy)
