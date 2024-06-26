@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 plt.rc('font', family='Malgun Gothic')
 plt.rcParams['axes.unicode_minus'] = False  # 한글 글꼴에서 마이너스 기호 깨지지 않도록
 
-visual_blueprint = Blueprint('visual', __name__)
+visual_bp = Blueprint('visual_bp', __name__)
 
 housing_data = fetch_california_housing()
 housing = pd.DataFrame(housing_data.data, columns=housing_data.feature_names)
@@ -74,37 +74,37 @@ def plot_piechart(data):
     plt.close()
     return img
 
-@visual_blueprint.route('/scatter', methods=['GET'])
+@visual_bp.route('/scatter', methods=['GET'])
 def visual_scatter():
     data = load_data()
     img = plot_scatter(data)
     return send_file(img, mimetype='image/png')
 
-@visual_blueprint.route('/heatmap', methods=['GET'])
+@visual_bp.route('/heatmap', methods=['GET'])
 def visual_heatmap():
     data = load_data()
     img = plot_heatmap(data)
     return send_file(img, mimetype='image/png')
 
-@visual_blueprint.route('/histogram', methods=['GET'])
+@visual_bp.route('/histogram', methods=['GET'])
 def visual_histogram():
     data = load_data()
     img = plot_histogram(data)
     return send_file(img, mimetype='image/png')
 
-@visual_blueprint.route('/boxplot', methods=['GET'])
+@visual_bp.route('/boxplot', methods=['GET'])
 def visual_boxplot():
     data = load_data()
     img = plot_boxplot(data)
     return send_file(img, mimetype='image/png')
 
-@visual_blueprint.route('/piechart', methods=['GET'])
+@visual_bp.route('/piechart', methods=['GET'])
 def visual_piechart():
     data = load_data()
     img = plot_piechart(data)
     return send_file(img, mimetype='image/png')
 
-@visual_blueprint.route('/scatter_location')
+@visual_bp.route('/scatter_location')
 def scatter_plot():
     img = io.BytesIO()
 
@@ -124,7 +124,7 @@ def scatter_plot():
     response.headers['Content-Disposition'] = 'inline; filename=scatter.png'
     return response
 
-@visual_blueprint.route('/pairplot')
+@visual_bp.route('/pairplot')
 def pairplot():
     img = io.BytesIO()
 
@@ -139,6 +139,6 @@ def pairplot():
     response.headers['Content-Disposition'] = 'inline; filename=pairplot.png'
     return response
 
-@visual_blueprint.route('/')
+@visual_bp.route('/')
 def visual_index():
     return render_template('visual.html')

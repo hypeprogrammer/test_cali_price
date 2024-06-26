@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
 
-predict_blueprint = Blueprint('predict', __name__)
+predict_bp = Blueprint('predict_bp', __name__)
 
 # 캘리포니아 주택가격 데이터 로드 및 모델 훈련
 def load_data_and_train_model():
@@ -45,8 +45,8 @@ accuracy = {
     'r2_percentage': r2 * 100
 }
 
-@predict_blueprint.route('/', methods=['GET', 'POST'])
-def predict():
+@predict_bp.route('/', methods=['GET', 'POST'])
+def predict_route():
     prediction = None
     if request.method == 'POST':
         input_data = request.form
